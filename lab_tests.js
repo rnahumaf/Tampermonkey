@@ -989,18 +989,43 @@
     // Exibe o relatório com formatação HTML na caixa de mensagens.
     resultDiv.innerHTML = results.finalHTML;
     resultDiv.style.display = "block";
-    copyButton.disabled = !results.finalPlain || results.finalPlain === "Nenhum exame encontrado.";
+    const noData = !results.finalPlain || results.finalPlain === "Nenhum exame encontrado.";
+    copyMarkdownButton.disabled = noData;
+    copyTextButton.disabled = noData;
+    copyRichButton.disabled = noData;
     console.log("Relatório extraído exibido para cópia manual.");
   });
 
-  copyButton.addEventListener("click", async function () {
+  copyMarkdownButton.addEventListener("click", async function () {
+    if (!lastExtraction || !lastExtraction.finalMarkdown) return;
+
+    try {
+      await copyToClipboard(lastExtraction.finalMarkdown);
+      console.log("Relatório em markdown copiado para a área de transferência.");
+    } catch (error) {
+      console.error("Falha ao copiar relatório markdown:", error);
+    }
+  });
+
+  copyTextButton.addEventListener("click", async function () {
     if (!lastExtraction || !lastExtraction.finalPlain) return;
 
     try {
       await copyToClipboard(lastExtraction.finalPlain);
-      console.log("Relatório copiado para a área de transferência.");
+      console.log("Relatório em texto simples copiado para a área de transferência.");
     } catch (error) {
-      console.error("Falha ao copiar relatório:", error);
+      console.error("Falha ao copiar relatório em texto simples:", error);
+    }
+  });
+
+  copyRichButton.addEventListener("click", async function () {
+    if (!lastExtraction || !lastExtraction.finalHTML) return;
+
+    try {
+      await copyRichToClipboard(lastExtraction.finalHTML, lastExtraction.finalPlain || "");
+      console.log("Relatório formatado (rich text) copiado para a área de transferência.");
+    } catch (error) {
+      console.error("Falha ao copiar relatório rich text:", error);
     }
   });
 
@@ -1016,7 +1041,9 @@
     resultDiv.style.height = collapsedHeight;
     toggleButton.innerText = "Expand";
     isExpanded = false;
-    copyButton.disabled = true;
+    copyMarkdownButton.disabled = true;
+    copyTextButton.disabled = true;
+    copyRichButton.disabled = true;
     lastExtraction = null;
   });
 })();
