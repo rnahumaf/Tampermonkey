@@ -676,12 +676,41 @@
     document.body.removeChild(temp);
   }
 
+  async function copyRichToClipboard(html, plainText) {
+    if (navigator.clipboard && typeof navigator.clipboard.write === "function" && typeof ClipboardItem !== "undefined") {
+      const item = new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([plainText], { type: "text/plain" }),
+      });
+      await navigator.clipboard.write([item]);
+      return;
+    }
+
+    if (typeof GM_setClipboard === "function") {
+      try {
+        GM_setClipboard(html, "html");
+        return;
+      } catch (error) {
+        console.warn("Fallback para texto simples ao copiar rich text:", error);
+      }
+      GM_setClipboard(plainText, "text");
+      return;
+    }
+
+    await copyToClipboard(plainText);
+  }
+
   // Função para formatar o valor do exame.
   function formatValue(exam, value, formatType) {
     const specialWords = ["Superior", "Positivo", "Presentes", "Presente", "Presença", "Reagente", "REAGENTE"]; // Added Reagente
+    const emphasize = (display) => {
+      if (formatType === "html") return `<strong><u>${display}</u></strong>`;
+      if (formatType === "markdown") return `**${display}**`;
+      return display;
+    };
     // Use lowercase for comparison
     if (typeof value === "string" && specialWords.some((word) => word.toLowerCase() === value.toLowerCase())) {
-      return formatType === "html" ? `<strong><u>${value}</u></strong>` : `*${value}*`;
+      return emphasize(value);
     }
     if (exam in reference_values) {
       // Value is already a number here if it was convertible
@@ -690,7 +719,7 @@
         // Format the number to avoid excessive decimals, keeping original if needed
         let displayValue = Number.isInteger(value) ? value : value.toFixed(2).replace(/\.?0+$/, ""); // Basic formatting
         if (value < low || value > high) {
-          return formatType === "html" ? `<strong><u>${displayValue}</u></strong>` : `*${displayValue}*`;
+          return emphasize(displayValue);
         } else {
           return displayValue;
         }
