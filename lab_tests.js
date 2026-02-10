@@ -455,22 +455,22 @@
     PPF2: /ordem de serviço[\s\S]*?DE FEZES - 2[\s\S]+?Resultado:?\s*(\S+)/i,
     PPF3: /ordem de serviço[\s\S]*?DE FEZES - 3[\s\S]+?Resultado:?\s*(\S+)/i,
     "Calprotectina fecal": /ordem de serviço[\s\S]*?Calprotectina[\s\S]*?Resultado:?\s*(\S+)/i,
-    "EAS-pH": /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?pH:?\s*([\d]+(?:[.,]\d+)?)/i,
-    Urobilinogênio: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Urobilinogênio:?\s*([^\r\n]+)/i,
-    Glicose: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Glicose:?\s*(Negativo|\+{1,4})/i,
-    "Corpos Cetônicos": /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Corpos\s+Cetônicos:?\s*(Negativo|\+{1,4})/i,
-    Bilirrubina: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Bilirrubina:?\s*(Negativo|\+{1,4})/i,
-    Proteínas: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Proteínas:?\s*(Negativo|\+{1,4})/i,
-    Hemoglobina: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Hemoglobina:?\s*(Negativo|Positivo\s*\+{1,4}|\+{1,4})/i,
-    Nitrito: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Nitrito:?\s*(Negativo|Positivo\s*\+{1,4}|\+{1,4})/i,
-    Leucoesterase: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Leucócito\s+esterase:?\s*(Negativo|Positivo\s*\+{1,4}|\+{1,4})/i,
-    "Células Epiteliais": /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Células\s+Epiteliais:?\s*(\d+)/i,
-    Leucócitos: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Leucócitos:?\s*(\d+)/i,
-    Hemácias: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Hemácias:?\s*(\d+)/i,
-    Cilindros: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Cilindros:?\s*([^\r\n]+)/i,
-    Cristais: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Cristais:?\s*([^\r\n]+)/i,
-    Muco: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Muco:?\s*([^\r\n]+)/i,
-    Bactérias: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Bactérias:?\s*([^\r\n]+)/i,
+    "EAS-pH": /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?pH:\s*([\d]+(?:[.,]\d+)?)/i,
+    Urobilinogênio: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Urobilinog[eê]nio:\s*([^\r\n]+)/i,
+    Glicose: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Glicose:\s*(Negativo|\+{1,4})/i,
+    "Corpos Cetônicos": /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Corpos\s+Cet[oô]nicos:\s*(Negativo|\+{1,4})/i,
+    Bilirrubina: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Pigmento(?:s)?\s+biliares:\s*(Negativo|\+{1,4})|ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Bilirrubina:\s*(Negativo|\+{1,4})/i,
+    Proteínas: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Prote[ií]nas:\s*(Negativo|\+{1,4})/i,
+    Hemoglobina: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Hemoglobina:\s*(Negativo|Positivo\s*\+{1,4}|\+{1,4})/i,
+    Nitrito: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Nitrito:\s*(Negativo|Positivo\s*\+{1,4}|\+{1,4})/i,
+    Leucoesterase: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Leuc[oó]cito\s+esterase:\s*(Negativo|Positivo\s*\+{1,4}|\+{1,4})/i,
+    "Células Epiteliais": /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?EXAME DO SEDIMENTO[\s\S]*?C[eé]lulas\s+epiteliais(?:\s+escamosas)?:\s*([^\r\n]+)/i,
+    Leucócitos: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?EXAME DO SEDIMENTO[\s\S]*?Leuc[oó]citos:\s*([\d]+(?:[.,]\d+)?|[^\r\n]+)/i,
+    Hemácias: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?EXAME DO SEDIMENTO[\s\S]*?(?:Hem[aá]cias|Eritr[oó]citos):\s*([\d]+(?:[.,]\d+)?|[^\r\n]+)/i,
+    Cilindros: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?EXAME DO SEDIMENTO[\s\S]*?Cilindros:\s*([^\r\n]+)/i,
+    Cristais: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?EXAME DO SEDIMENTO[\s\S]*?Cristais:\s*([^\r\n]+)/i,
+    Muco: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?EXAME DO SEDIMENTO[\s\S]*?(?:Filamentos\s+de\s+muco|Muco):\s*([^\r\n]+)/i,
+    Bactérias: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?EXAME DO SEDIMENTO[\s\S]*?Bact[eé]rias:\s*([^\r\n]+)/i,
     "Albuminúria isolada": /ordem de serviço[\s\S]*?RELAÇÃO\s+ALBUMINA\/CREATININA[\s\S]*?(\d+(?:,\d+)?)\s+mg\/g/i,
     "Proteinúria 24h": /ordem de serviço[\s\S]*?PROTEINÚRIA URINA DE 24[\s\S]*?Resultado:\s*(\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?)/i,
     UROC: /ordem de serviço[\s\S]*?UROCULTURA[\s\S]*?Resultado:\s*(\S+)/i, // May need refinement based on result format
@@ -650,6 +650,7 @@
     return String(value || "")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
       .toLowerCase()
       .trim();
   }
@@ -827,12 +828,15 @@
     const renameToNRWords = ["Não", "Inferior"];
     // Define exams to omit if result is "Ausente", "Negativo", or "Normal"
     // OBS: Nitrito é um marcador importante no EAS; não omitir quando vier "Negativo".
-    const omitExamsIfNeutral = ["Cetonas", "Bilirru", "Urobili", "Protein", "Glicose", "Hemoglo", "Cilindr", "Escamos", "Não esc", "Levedur", "Fil muc", "Cristal"];
+    const omitExamsIfNeutral = ["Cetonas", "Bilirru", "Urobili", "Protein", "Glicose", "Hemoglo", "Cilindr", "Escamos", "Não esc", "Levedur", "Fil muc", "Muco", "Cristal", "Células Epiteliais"];
     // Define neutral results that trigger omission for specific exams
     const neutralResults = ["Ausente", "Ausentes", "Negativo", "Normal"];
     const renameToNRWordsNormalized = renameToNRWords.map(normalizeForComparison);
     const omitExamsIfNeutralNormalized = omitExamsIfNeutral.map(normalizeForComparison);
     const neutralResultsNormalized = neutralResults.map(normalizeForComparison);
+    const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const isNeutralValue = (normalizedValue) =>
+      neutralResultsNormalized.some((neutral) => new RegExp(`^${escapeRegex(neutral)}(?:\\s+${escapeRegex(neutral)})*$`).test(normalizedValue));
 
     // Separar resultados por categoria
     let bloodPartsHTML = [];
@@ -875,7 +879,7 @@
       }
 
       // Check if the exam should be omitted based on a neutral result (case-insensitive)
-      if (neutralResultsNormalized.includes(normalizedRawResult) && omitExamsIfNeutralNormalized.some((token) => normalizedExam.includes(token))) {
+      if (isNeutralValue(normalizedRawResult) && omitExamsIfNeutralNormalized.some((token) => normalizedExam.includes(token))) {
         continue;
       }
 
