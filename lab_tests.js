@@ -845,6 +845,11 @@
     let rheumPartsPlain = [];
     let urinePartsPlain = [];
     let stoolPartsPlain = [];
+    let bloodPartsMarkdown = [];
+    let allergyPartsMarkdown = [];
+    let rheumPartsMarkdown = [];
+    let urinePartsMarkdown = [];
+    let stoolPartsMarkdown = [];
 
     for (let exam in results) {
       let rawResult = results[exam];
@@ -874,19 +879,22 @@
         continue;
       }
 
-      let formattedHTML, formattedPlain;
+      let formattedHTML, formattedPlain, formattedMarkdown;
       if (/^\d+\s*[:/]\s*\d+$/.test(rawResult)) {
         // Título (e.g., "1:64" ou "1/320"), manter como string
         formattedHTML = rawResult;
         formattedPlain = rawResult;
+        formattedMarkdown = rawResult;
       } else {
         const num = convertToFloat(rawResult);
         if (!isNaN(num)) {
           formattedHTML = formatValue(exam, num, "html");
           formattedPlain = formatValue(exam, num, "plain");
+          formattedMarkdown = formatValue(exam, num, "markdown");
         } else {
           formattedHTML = formatValue(exam, rawResult, "html");
           formattedPlain = formatValue(exam, rawResult, "plain");
+          formattedMarkdown = formatValue(exam, rawResult, "markdown");
         }
       }
 
@@ -895,64 +903,82 @@
         const normalized = normalizeForComparison(rawResult);
         if (rawResult !== "NR" && !/^amostra nao/.test(normalized)) {
           formattedHTML = `<strong>${rawResult}</strong>`;
+          formattedMarkdown = `**${rawResult}**`;
         }
       }
 
       // Adicionar ao array da categoria apropriada
       const examEntry = `${exam} ${formattedHTML}`;
       const examEntryPlain = `${exam} ${formattedPlain}`;
+      const examEntryMarkdown = `${exam} ${formattedMarkdown}`;
       const category = getExamCategory(exam);
       if (category === "urine") {
         urinePartsHTML.push(examEntry);
         urinePartsPlain.push(examEntryPlain);
+        urinePartsMarkdown.push(examEntryMarkdown);
       } else if (category === "stool") {
         stoolPartsHTML.push(examEntry);
         stoolPartsPlain.push(examEntryPlain);
+        stoolPartsMarkdown.push(examEntryMarkdown);
       } else if (category === "rheum") {
         rheumPartsHTML.push(examEntry);
         rheumPartsPlain.push(examEntryPlain);
+        rheumPartsMarkdown.push(examEntryMarkdown);
       } else if (category === "allergy") {
         allergyPartsHTML.push(examEntry);
         allergyPartsPlain.push(examEntryPlain);
+        allergyPartsMarkdown.push(examEntryMarkdown);
       } else {
         bloodPartsHTML.push(examEntry);
         bloodPartsPlain.push(examEntryPlain);
+        bloodPartsMarkdown.push(examEntryMarkdown);
       }
     }
 
     // Construir o HTML final com itens separados por categoria
     let listItems = [];
     let listItemsPlain = [];
+    let listItemsMarkdown = [];
 
     if (bloodPartsHTML.length > 0) {
       listItems.push(`<li><strong>Exames de sangue ${cadastroDate}:</strong> ${bloodPartsHTML.join(" / ")}</li>`);
       listItemsPlain.push(`Exames de sangue ${cadastroDate}: ${bloodPartsPlain.join(" / ")}`);
+      listItemsMarkdown.push(`- **Exames de sangue ${cadastroDate}:** ${bloodPartsMarkdown.join(" / ")}`);
     }
 
     if (allergyPartsHTML.length > 0) {
       listItems.push(`<li><strong>Provas alérgicas ${cadastroDate}:</strong> ${allergyPartsHTML.join(" / ")}</li>`);
       listItemsPlain.push(`Provas alérgicas ${cadastroDate}: ${allergyPartsPlain.join(" / ")}`);
+      listItemsMarkdown.push(`- **Provas alérgicas ${cadastroDate}:** ${allergyPartsMarkdown.join(" / ")}`);
     }
 
     if (rheumPartsHTML.length > 0) {
       listItems.push(`<li><strong>Provas reumatológicas ${cadastroDate}:</strong> ${rheumPartsHTML.join(" / ")}</li>`);
       listItemsPlain.push(`Provas reumatológicas ${cadastroDate}: ${rheumPartsPlain.join(" / ")}`);
+      listItemsMarkdown.push(`- **Provas reumatológicas ${cadastroDate}:** ${rheumPartsMarkdown.join(" / ")}`);
     }
 
     if (urinePartsHTML.length > 0) {
       listItems.push(`<li><strong>Exames de urina ${cadastroDate}:</strong> ${urinePartsHTML.join(" / ")}</li>`);
       listItemsPlain.push(`Exames de urina ${cadastroDate}: ${urinePartsPlain.join(" / ")}`);
+      listItemsMarkdown.push(`- **Exames de urina ${cadastroDate}:** ${urinePartsMarkdown.join(" / ")}`);
     }
 
     if (stoolPartsHTML.length > 0) {
       listItems.push(`<li><strong>Exames de fezes ${cadastroDate}:</strong> ${stoolPartsHTML.join(" / ")}</li>`);
       listItemsPlain.push(`Exames de fezes ${cadastroDate}: ${stoolPartsPlain.join(" / ")}`);
+      listItemsMarkdown.push(`- **Exames de fezes ${cadastroDate}:** ${stoolPartsMarkdown.join(" / ")}`);
     }
 
     const finalHTML = listItems.length > 0 ? `<ul>${listItems.join("")}</ul>` : "<p>Nenhum exame encontrado.</p>";
     const finalPlain = listItemsPlain.length > 0 ? listItemsPlain.join("\n") : "Nenhum exame encontrado.";
+    const finalMarkdown = listItemsMarkdown.length > 0 ? listItemsMarkdown.join("\n") : "Nenhum exame encontrado.";
 
-    return { finalHTML: removeIsolatedZeros(finalHTML), finalPlain: removeIsolatedZeros(finalPlain) };
+    return {
+      finalHTML: removeIsolatedZeros(finalHTML),
+      finalPlain: removeIsolatedZeros(finalPlain),
+      finalMarkdown: removeIsolatedZeros(finalMarkdown),
+    };
   }
 
   // -------------------------------
