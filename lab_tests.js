@@ -31,14 +31,30 @@
   actionRow.style.gap = "6px";
   actionRow.style.marginBottom = "6px";
 
+  const copyRow = document.createElement("div");
+  copyRow.style.display = "flex";
+  copyRow.style.gap = "6px";
+  copyRow.style.marginBottom = "6px";
+
+  function setButtonIcon(buttonEl, label, svgMarkup) {
+    buttonEl.style.display = "inline-flex";
+    buttonEl.style.alignItems = "center";
+    buttonEl.style.justifyContent = "center";
+    buttonEl.style.gap = "4px";
+    buttonEl.innerHTML = `${svgMarkup}<span>${label}</span>`;
+  }
+
+  const markdownIcon =
+    '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1.5" y="2" width="13" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M3.8 10V6.2l2.2 2.2 2.2-2.2V10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.2 6.5v3.5m0 0l-1.4-1.4m1.4 1.4l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const simpleTextIcon =
+    '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1.5" y="2" width="13" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 5.5h8M4 8h8M4 10.5h5.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+  const richTextIcon =
+    '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1.5" y="2" width="13" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 5.3h4.2M4 8h4.2M4 10.7h4.2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10.2 5.1h1.4a1.2 1.2 0 0 1 0 2.4h-1.4zm0 0v5.8m0-3.4h1.6a1.2 1.2 0 0 1 0 2.4h-1.6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
   // Cria os botões de ação.
   const button = document.createElement("button");
   button.innerText = "Extract";
   button.style.flex = "1";
-
-  const copyButton = document.createElement("button");
-  copyButton.innerText = "Copy";
-  copyButton.disabled = true;
 
   const toggleButton = document.createElement("button");
   toggleButton.innerText = "Expand";
@@ -46,11 +62,27 @@
   const closeButton = document.createElement("button");
   closeButton.innerText = "Close";
 
+  const copyMarkdownButton = document.createElement("button");
+  const copyTextButton = document.createElement("button");
+  const copyRichButton = document.createElement("button");
+  copyMarkdownButton.disabled = true;
+  copyTextButton.disabled = true;
+  copyRichButton.disabled = true;
+  copyMarkdownButton.style.flex = "1";
+  copyTextButton.style.flex = "1";
+  copyRichButton.style.flex = "1";
+  setButtonIcon(copyMarkdownButton, "Markdown", markdownIcon);
+  setButtonIcon(copyTextButton, "Simple Text", simpleTextIcon);
+  setButtonIcon(copyRichButton, "Rich Text", richTextIcon);
+
   actionRow.appendChild(button);
-  actionRow.appendChild(copyButton);
   actionRow.appendChild(toggleButton);
   actionRow.appendChild(closeButton);
+  copyRow.appendChild(copyMarkdownButton);
+  copyRow.appendChild(copyTextButton);
+  copyRow.appendChild(copyRichButton);
   container.appendChild(actionRow);
+  container.appendChild(copyRow);
 
   // Cria um div para exibir o resultado (com HTML renderizado).
   const resultDiv = document.createElement("div");
