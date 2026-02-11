@@ -51,6 +51,8 @@
 
     // Menu
     startMinimized: false, // se quiser iniciar minimizado
+    // Atalho de toggle (Fn nao e detectavel via eventos de teclado no navegador)
+    menuToggleKey: "F8",
   };
 
   /********************************************************************
@@ -76,8 +78,8 @@
         right: 10px;
         z-index: 2147483646;
 
-        min-width: 280px;
-        max-width: 360px;
+        min-width: 252px;
+        max-width: 330px;
 
         background: rgba(255, 255, 255, 0.58);
         backdrop-filter: blur(12px);
@@ -106,8 +108,24 @@
 
       #tmShortcutMenu .tmTopbar .tmTitle {
         display: flex;
-        gap: 8px;
-        align-items: center;
+        flex-direction: column;
+        gap: 3px;
+        align-items: flex-start;
+      }
+
+      #tmShortcutMenu .tmTopbar .tmTitle .tmTitleMain {
+        line-height: 1.2;
+      }
+
+      #tmShortcutMenu .tmTopbar .tmHotkeyHint {
+        font-size: 11px;
+        font-weight: 700;
+        color: #0b5394;
+        background: rgba(11, 83, 148, 0.12);
+        border: 1px solid rgba(11, 83, 148, 0.28);
+        border-radius: 999px;
+        padding: 2px 8px;
+        line-height: 1.3;
         white-space: nowrap;
       }
 
@@ -118,16 +136,28 @@
       }
 
       #tmShortcutMenu button.tmIconBtn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 28px;
         height: 28px;
         border-radius: 8px;
         border: 1px solid #d0d7de;
         background: #fff;
         cursor: pointer;
-        font-weight: 800;
+        padding: 0;
         color: #444;
       }
       #tmShortcutMenu button.tmIconBtn:hover { background: #f3f4f6; }
+      #tmShortcutMenu button.tmIconBtn svg {
+        width: 15px;
+        height: 15px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
 
       #tmShortcutMenu .tmBody {
         padding: 8px 10px 10px;
@@ -169,6 +199,21 @@
         color: #111;
       }
       #tmShortcutMenu button.tmBtn:hover { background: #f3f4f6; }
+      #tmShortcutMenu button.tmBtn.tmBtnIcon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+      #tmShortcutMenu button.tmBtn.tmBtnIcon svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
 
       #tmShortcutMenu button.tmBtn.primary {
         border-color: #1976d2;
@@ -189,6 +234,9 @@
         right: 10px;
         z-index: 2147483647;
 
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 38px;
         height: 38px;
         border-radius: 999px;
@@ -196,14 +244,16 @@
         background: rgba(255,255,255,0.92);
         box-shadow: 0 8px 20px rgba(0,0,0,.22);
         cursor: pointer;
-        font-size: 18px;
+        padding: 0;
       }
       #tmShortcutMinBtn:hover { background: #fff; }
-
-      /* Ocultar temporariamente o menu enquanto Caps Lock estiver pressionado */
-      html.tmCapsHideMenu #tmShortcutMenu,
-      html.tmCapsHideMenu #tmShortcutMinBtn {
-        display: none !important;
+      #tmShortcutMinBtn svg {
+        width: 18px;
+        height: 18px;
+        stroke: #2b2f33;
+        fill: none;
+        stroke-width: 1.9;
+        stroke-linecap: round;
       }
 
       /* Opcional: esconder alerts do sistema (mantido do seu script) */
@@ -686,6 +736,34 @@
     return b;
   }
 
+  function svgIcon(pathMarkup, viewBox = "0 0 16 16") {
+    return `<svg viewBox="${viewBox}" aria-hidden="true" focusable="false">${pathMarkup}</svg>`;
+  }
+
+  function makeIconBtn(iconHtml, title, onClick, kind = "") {
+    const b = el("button", { class: `tmBtn tmBtnIcon ${kind}`.trim(), type: "button", html: iconHtml, title, "aria-label": title });
+    b.addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick(b);
+      },
+      true,
+    );
+    return b;
+  }
+
+  const ICONS = {
+    minimize: svgIcon('<path d="M3 8h10"></path>'),
+    refresh: svgIcon('<path d="M13 3v4H9"></path><path d="M13 7a5 5 0 1 0 1.2 3.4"></path>'),
+    menu: svgIcon('<path d="M3 4h10M3 8h10M3 12h10"></path>'),
+    expand: svgIcon('<rect x="2.5" y="2.5" width="11" height="11" rx="2"></rect><path d="M8 5v6M5 8h6"></path>'),
+    collapse: svgIcon('<rect x="2.5" y="2.5" width="11" height="11" rx="2"></rect><path d="M5 8h6"></path>'),
+    up: svgIcon('<path d="M4 7l4-4 4 4"></path><path d="M8 3v10"></path>'),
+    down: svgIcon('<path d="M4 9l4 4 4-4"></path><path d="M8 3v10"></path>'),
+  };
+
   function makeGroup(title, buttons, openByDefault = true) {
     const content = el("div", { class: "tmGroupContent" }, buttons);
     return (el("details", { class: "tmGroup" }, [el("summary", { text: title }), content]).setAttribute("open", openByDefault ? "" : ""), content.parentElement); // (linha inócua só para ficar claro)
@@ -700,7 +778,8 @@
       class: "tmIconBtn",
       type: "button",
       title: "Minimizar",
-      text: "–",
+      html: ICONS.minimize,
+      "aria-label": "Minimizar",
       onclick: () => minimizeMenu(),
     });
 
@@ -708,18 +787,24 @@
       class: "tmIconBtn",
       type: "button",
       title: "Reaplicar indicadores (highlights)",
-      text: "↻",
+      html: ICONS.refresh,
+      "aria-label": "Reaplicar indicadores",
       onclick: () => applyIndicatorHighlights(),
     });
 
-    const topbar = el("div", { class: "tmTopbar" }, [el("div", { class: "tmTitle", text: "Menu de Atalhos" }), el("div", { class: "tmButtons" }, [btnReapply, btnMin])]);
+    const topbarTitle = el("div", { class: "tmTitle" }, [
+      el("span", { class: "tmTitleMain", text: "Menu de Atalhos" }),
+      el("span", { class: "tmHotkeyHint", text: `${String(CFG.menuToggleKey || "F8").toUpperCase()}: minimizar/maximizar` }),
+    ]);
+
+    const topbar = el("div", { class: "tmTopbar" }, [topbarTitle, el("div", { class: "tmButtons" }, [btnReapply, btnMin])]);
 
     const body = el("div", { class: "tmBody" });
 
     // Colapsáveis
     const grpColapsaveis = el("details", { class: "tmGroup" }, [
       el("summary", { text: "Colapsáveis" }),
-      el("div", { class: "tmGroupContent" }, [makeBtn("Expandir", 'Expande tudo (aria-expanded="false")', () => expandAllAria(), "primary"), makeBtn("Recolher", 'Recolhe tudo (aria-expanded="true")', () => collapseAllAria(), "")]),
+      el("div", { class: "tmGroupContent" }, [makeIconBtn(ICONS.expand, 'Expande tudo (aria-expanded="false")', () => expandAllAria(), "primary"), makeIconBtn(ICONS.collapse, 'Recolhe tudo (aria-expanded="true")', () => collapseAllAria(), "")]),
     ]);
     grpColapsaveis.open = true;
 
@@ -731,8 +816,8 @@
     const grpRolar = el("details", { class: "tmGroup" }, [
       el("summary", { text: "Rolar" }),
       el("div", { class: "tmGroupContent" }, [
-        makeBtn(
-          "Cima",
+        makeIconBtn(
+          ICONS.up,
           "Ir para o topo",
           () => {
             const s = document.scrollingElement || document.documentElement;
@@ -741,8 +826,8 @@
           "",
         ),
 
-        makeBtn(
-          "Baixo",
+        makeIconBtn(
+          ICONS.down,
           "Ir para o fim",
           () => {
             const s = document.scrollingElement || document.documentElement;
@@ -790,7 +875,8 @@
         id: "tmShortcutMinBtn",
         type: "button",
         title: "Mostrar Menu de Atalhos",
-        text: "≡",
+        html: ICONS.menu,
+        "aria-label": "Mostrar Menu de Atalhos",
         onclick: () => maximizeMenu(),
       });
       document.body.appendChild(minBtn);
@@ -820,65 +906,45 @@
   }
 
   /********************************************************************
-   * Atalho: segurar Caps Lock para ocultar temporariamente o menu
-   * (Caps Lock é toggle, mas aqui "pressionado" = entre keydown e keyup)
+   * Atalho: toggle do menu em toque unico
    ********************************************************************/
-  let capsHideInstalled = false;
-  let capsHideDown = false;
+  let toggleHotkeyInstalled = false;
 
-  function setCapsHoldHide(active) {
-    document.documentElement.classList.toggle("tmCapsHideMenu", !!active);
+  function isMenuMinimized() {
+    const menu = document.getElementById("tmShortcutMenu");
+    if (!menu) return false;
+    return getComputedStyle(menu).display === "none";
   }
 
-  function installCapsHoldHide() {
-    if (capsHideInstalled) return;
-    capsHideInstalled = true;
+  function toggleMenu() {
+    if (isMenuMinimized()) maximizeMenu();
+    else minimizeMenu();
+  }
+
+  function installToggleHotkey() {
+    if (toggleHotkeyInstalled) return;
+    toggleHotkeyInstalled = true;
 
     window.addEventListener(
       "keydown",
       (e) => {
-        if (e.key !== "CapsLock") return;
-        if (capsHideDown) return;
-        capsHideDown = true;
-        setCapsHoldHide(true);
-      },
-      true,
-    );
+        const pressedKey = String(e.key || "").toUpperCase();
+        const configuredKey = String(CFG.menuToggleKey || "").toUpperCase();
 
-    window.addEventListener(
-      "keyup",
-      (e) => {
-        if (e.key !== "CapsLock") return;
-        capsHideDown = false;
-        setCapsHoldHide(false);
-      },
-      true,
-    );
+        if (!configuredKey || pressedKey !== configuredKey) return;
+        if (e.repeat) return;
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
 
-    // evita “ficar escondido” se a aba perder foco com Caps Lock pressionado
-    window.addEventListener(
-      "blur",
-      () => {
-        capsHideDown = false;
-        setCapsHoldHide(false);
-      },
-      true,
-    );
-
-    document.addEventListener(
-      "visibilitychange",
-      () => {
-        if (document.hidden) {
-          capsHideDown = false;
-          setCapsHoldHide(false);
-        }
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
       },
       true,
     );
   }
 
   /********************************************************************
-   * Bootstrap + reapply em DOM dinâmico
+   * Bootstrap + reapply em DOM dinamico
    ********************************************************************/
   function debounce(fn, ms) {
     let t = null;
@@ -891,7 +957,7 @@
   function init() {
     ensureStyles();
     buildMenu();
-    installCapsHoldHide();
+    installToggleHotkey();
     applyIndicatorHighlights();
   }
 
@@ -910,3 +976,4 @@
   const mo = new MutationObserver(() => scheduleReapply());
   mo.observe(document.documentElement, { childList: true, subtree: true });
 })();
+
