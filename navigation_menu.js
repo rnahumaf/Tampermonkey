@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         e-SUS – Menu de Atalhos (temas + indicadores)
+// @name         e-SUS – Menu de Atalhos + Botão CID (unificado, sem realce)
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Menu flutuante por temas: expandir/recolher, copiar, rolar, indicadores com highlight + navegação, e finalização.
+// @version      2.0
+// @description  Script unificado: menu de atalhos, navegação, copiar, expandir/recolher e botão proxy do CID, sem realces de cor na tela.
 // @match        *://*esus.jaguariuna.sp.gov.br*/*
 // @grant        none
 // @run-at       document-idle
@@ -38,7 +38,7 @@
       Guias: "/html/body/div[1]/div/div[3]/main/div[1]/form/div[1]/div/div/div[2]/div/div/div[5]/div[2]/div/div/div[4]/div/div[1]",
     },
 
-    // Textos âncora (usados para highlight e para navegação por texto)
+    // Textos âncora (usados para navegação por texto)
     texts: {
       PA: ["Pressão Arterial", "P.A.", "PA"],
       Vacina: ["Vacinação em dia?"],
@@ -53,6 +53,11 @@
     startMinimized: false, // se quiser iniciar minimizado
     // Atalho de toggle (Fn nao e detectavel via eventos de teclado no navegador)
     menuToggleKey: "F8",
+
+    // Botão proxy do CID (funcionalidade do adicionar_cid.js)
+    proxyButtonSelector: ".css-1mtpmwu",
+    proxyTargetXPath: "/html/body/div[1]/div/div[3]/main/div[1]/form/div[1]/div/div/div[2]/div/div/div[4]/div[2]/div/div/div[3]/div/div/div/div/div[1]/div/div[2]/div/div/div[1]/div/div/div/div/div/div/div/div/div",
+    proxyId: "userscript_proxy_button",
   };
 
   /********************************************************************
@@ -63,14 +68,6 @@
     const st = document.createElement("style");
     st.id = "tmShortcutMenuStyle";
     st.textContent = `
-      /* Highlight dos indicadores */
-      .tm-hilite {
-        background: rgba(255, 235, 59, 0.35) !important;
-        border-radius: 8px !important;
-        outline: 2px solid rgba(255, 193, 7, 0.55) !important;
-        outline-offset: 2px !important;
-      }
-
       /* Menu */
       #tmShortcutMenu {
         position: fixed;
@@ -317,14 +314,8 @@
   }
 
   /********************************************************************
-   * Highlight: heurísticas robustas (as que você já validou)
+   * Indicadores: heurísticas robustas (sem realce visual)
    ********************************************************************/
-  const HILITE_CLASS = "tm-hilite";
-
-  function highlight(el) {
-    if (!el) return;
-    el.classList.add(HILITE_CLASS);
-  }
 
   function bestVisibleBox(el, maxHops = 14) {
     let cur = el;
@@ -417,9 +408,7 @@
     indicatorTargets.set(key, el);
   }
 
-  function clearIndicatorHighlights() {
-    // Evita “acumular” highlights (isso é o que amarelando a tela após expandir/recolher)
-    document.querySelectorAll("." + HILITE_CLASS).forEach((el) => el.classList.remove(HILITE_CLASS));
+  function clearIndicatorTargets() {
     indicatorTargets.clear();
   }
 
@@ -438,11 +427,6 @@
       }
     }
 
-    const container = jointContainer(label, control) || closestFieldContainer(control || label);
-
-    const bigger = expandIsolatedBlock(bestVisibleBox(container), 8);
-    highlight(bigger);
-
     // Para navegação: âncora menor = scroll mais “direto”
     return control || label;
   }
@@ -450,9 +434,6 @@
   function highlightByLabelLike(labelTexts) {
     const anchor = findFirstElementByText(labelTexts, "label");
     if (!anchor) return null;
-    const box = expandIsolatedBlock(bestVisibleBox(closestFieldContainer(anchor)), 8);
-    highlight(box);
-
     // Para navegação: âncora menor = scroll mais “direto”
     return anchor;
   }
@@ -467,18 +448,12 @@
     const tablist = findGuiasTablist();
     if (!tablist) return null;
 
-    // o wrapper do tablist normalmente é o "card" das Guias
-    const base = tablist.closest("div") || tablist;
-    const box = expandIsolatedBlock(bestVisibleBox(base), 10);
-
-    highlight(box);
-
     // Para navegação: âncora menor = scroll mais “direto”
     return tablist;
   }
 
-  function applyIndicatorHighlights() {
-    clearIndicatorHighlights();
+  function refreshIndicatorTargets() {
+    clearIndicatorTargets();
 
     // PA
     const paEl = highlightByLabelLike(CFG.texts.PA);
@@ -526,8 +501,8 @@
     } finally {
       ariaBatchBusy = false;
 
-      // após expandir, recalcula os highlights (sem acumular)
-      applyIndicatorHighlights();
+      // após expandir, recalcula os alvos dos indicadores
+      refreshIndicatorTargets();
     }
   }
 
@@ -555,8 +530,8 @@
     } finally {
       ariaBatchBusy = false;
 
-      // após recolher, recalcula os highlights (sem acumular)
-      applyIndicatorHighlights();
+      // após recolher, recalcula os alvos dos indicadores
+      refreshIndicatorTargets();
     }
   }
 
@@ -619,7 +594,7 @@
    * Navegação (Indicadores + Finalização)
    ********************************************************************/
   function scrollToIndicator(key) {
-    applyIndicatorHighlights(); // pode manter
+    refreshIndicatorTargets();
 
     const el = indicatorTargets.get(key);
     if (el) {
@@ -636,6 +611,127 @@
     }
 
     console.warn("[TM] Indicador sem alvo:", key);
+  }
+
+  /********************************************************************
+   * Botão proxy do CID (sem pintar painéis)
+   ********************************************************************/
+  function insertAfter(ref, node) {
+    if (ref && ref.parentNode) ref.parentNode.insertBefore(node, ref.nextSibling);
+  }
+
+  function domDistance(a, b) {
+    const map = new Map();
+    let d = 0;
+    let n = a;
+    while (n) {
+      map.set(n, d++);
+      n = n.parentElement;
+    }
+    d = 0;
+    n = b;
+    while (n) {
+      if (map.has(n)) return map.get(n) + d;
+      n = n.parentElement;
+      d++;
+    }
+    return Number.POSITIVE_INFINITY;
+  }
+
+  function findBestRealButton(target) {
+    const all = Array.from(document.querySelectorAll(CFG.proxyButtonSelector)).filter((el) => el.id !== CFG.proxyId);
+    if (all.length === 0) return null;
+
+    const form = target.closest("form");
+    const sameForm = form ? all.filter((el) => el.closest("form") === form) : all;
+    const list = sameForm.length ? sameForm : all;
+
+    let best = null;
+    let bestScore = Infinity;
+    for (const el of list) {
+      const cs = getComputedStyle(el);
+      const visible = cs.display !== "none" && cs.visibility !== "hidden" && el.offsetWidth > 0 && el.offsetHeight > 0;
+      const score = domDistance(target, el) + (visible ? 0 : 1000);
+      if (score < bestScore) {
+        bestScore = score;
+        best = el;
+      }
+    }
+    return best;
+  }
+
+  function ensureProxyAndWire() {
+    const target = evalXPathFirst(CFG.proxyTargetXPath);
+    if (!target) return;
+
+    let proxy = document.getElementById(CFG.proxyId);
+    if (!proxy) {
+      proxy = document.createElement("button");
+      proxy.id = CFG.proxyId;
+      proxy.type = "button";
+      proxy.style.display = "inline-flex";
+      proxy.style.alignItems = "center";
+      proxy.style.gap = "6px";
+      proxy.style.marginLeft = "8px";
+      proxy.style.padding = "6px 12px";
+      proxy.style.borderRadius = "4px";
+      proxy.style.border = "1px solid #ccc";
+      proxy.style.background = "#f6f6f6";
+      proxy.style.cursor = "pointer";
+      proxy.textContent = "Ação";
+      insertAfter(target, proxy);
+
+      proxy.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const clickTarget = evalXPathFirst(CFG.proxyTargetXPath) || target;
+          const real = findBestRealButton(clickTarget);
+          if (!real) return;
+          real.focus();
+          real.click();
+        },
+        true,
+      );
+    } else if (proxy.previousSibling !== target) {
+      insertAfter(target, proxy);
+    }
+
+    const real = findBestRealButton(target);
+    if (!real) {
+      proxy.disabled = true;
+      proxy.textContent = "Aguardando botão...";
+      return;
+    }
+
+    proxy.disabled = real.disabled || real.getAttribute("aria-disabled") === "true";
+    const txt = (real.innerText || real.textContent || "Ação").trim();
+    if (txt && proxy.textContent !== txt) proxy.textContent = txt;
+  }
+
+  function positionProxy() {
+    const target = evalXPathFirst(CFG.proxyTargetXPath);
+    const proxy = document.getElementById(CFG.proxyId);
+    if (!target || !proxy) return;
+
+    const rect = target.getBoundingClientRect();
+    const visible = rect.width > 0 && rect.height > 0;
+    if (!visible) {
+      proxy.style.visibility = "hidden";
+      return;
+    }
+
+    proxy.style.visibility = "visible";
+    proxy.style.position = "fixed";
+    proxy.style.top = rect.top + "px";
+    proxy.style.left = rect.right + 8 + "px";
+    proxy.style.zIndex = "9999";
+  }
+
+  function refreshProxyButton() {
+    ensureProxyAndWire();
+    positionProxy();
   }
 
   function scrollToCID() {
@@ -786,10 +882,13 @@
     const btnReapply = el("button", {
       class: "tmIconBtn",
       type: "button",
-      title: "Reaplicar indicadores (highlights)",
+      title: "Atualizar alvos dos indicadores",
       html: ICONS.refresh,
-      "aria-label": "Reaplicar indicadores",
-      onclick: () => applyIndicatorHighlights(),
+      "aria-label": "Atualizar alvos dos indicadores",
+      onclick: () => {
+        refreshIndicatorTargets();
+        refreshProxyButton();
+      },
     });
 
     const topbarTitle = el("div", { class: "tmTitle" }, [el("span", { class: "tmTitleMain", text: "Menu de Atalhos" }), el("span", { class: "tmHotkeyHint", text: `${String(CFG.menuToggleKey || "F8").toUpperCase()}: minimizar/maximizar` })]);
@@ -955,13 +1054,14 @@
     ensureStyles();
     buildMenu();
     installToggleHotkey();
-    applyIndicatorHighlights();
+    refreshIndicatorTargets();
+    refreshProxyButton();
   }
 
   const scheduleReapply = debounce(() => {
-    // durante expandir/recolher, o DOM muda muito; evitar recalcular highlight no meio do lote
-    if (ariaBatchBusy) return;
-    applyIndicatorHighlights();
+    // durante expandir/recolher, o DOM muda muito; evita recalcular no meio do lote
+    if (!ariaBatchBusy) refreshIndicatorTargets();
+    refreshProxyButton();
   }, 180);
 
   if (document.readyState === "loading") {
@@ -972,4 +1072,23 @@
 
   const mo = new MutationObserver(() => scheduleReapply());
   mo.observe(document.documentElement, { childList: true, subtree: true });
+
+  const scheduleProxyPosition = (() => {
+    let pending = false;
+    return () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        positionProxy();
+      });
+    };
+  })();
+
+  window.addEventListener("scroll", scheduleProxyPosition, true);
+  window.addEventListener("resize", scheduleProxyPosition);
+  document.addEventListener("click", scheduleReapply, true);
+  document.addEventListener("change", scheduleReapply, true);
+  document.addEventListener("input", scheduleReapply, true);
+  document.addEventListener("keydown", scheduleReapply, true);
 })();
