@@ -792,10 +792,7 @@
       onclick: () => applyIndicatorHighlights(),
     });
 
-    const topbarTitle = el("div", { class: "tmTitle" }, [
-      el("span", { class: "tmTitleMain", text: "Menu de Atalhos" }),
-      el("span", { class: "tmHotkeyHint", text: `${String(CFG.menuToggleKey || "F8").toUpperCase()}: minimizar/maximizar` }),
-    ]);
+    const topbarTitle = el("div", { class: "tmTitle" }, [el("span", { class: "tmTitleMain", text: "Menu de Atalhos" }), el("span", { class: "tmHotkeyHint", text: `${String(CFG.menuToggleKey || "F8").toUpperCase()}: minimizar/maximizar` })]);
 
     const topbar = el("div", { class: "tmTopbar" }, [topbarTitle, el("div", { class: "tmButtons" }, [btnReapply, btnMin])]);
 
@@ -976,4 +973,3 @@
   const mo = new MutationObserver(() => scheduleReapply());
   mo.observe(document.documentElement, { childList: true, subtree: true });
 })();
-

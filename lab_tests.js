@@ -113,7 +113,33 @@
   // Categorização dos exames por tipo de amostra
   const urineExams = ["EAS-pH", "Urobilinogênio", "Glicose", "Corpos Cetônicos", "Bilirrubina", "Proteínas", "Hemoglobina", "Nitrito", "Leucoesterase", "Células Epiteliais", "Leucócitos", "Hemácias", "Cilindros", "Cristais", "Muco", "Bactérias", "Albuminúria isolada", "Proteinúria 24h", "UROC"];
 
-  const stoolExams = ["PSOF1", "PSOF2", "PSOF3", "H pylori nas fezes", "Gorduras fecais", "PPF1", "PPF2", "PPF3", "Calprotectina fecal"];
+  const stoolExams = [
+    "PSOF1",
+    "PSOF2",
+    "PSOF3",
+    "H pylori nas fezes",
+    "Gorduras fecais",
+    "PPF1",
+    "PPF2",
+    "PPF3",
+    "Calprotectina fecal",
+    "F.F. Consistência",
+    "F.F. Forma",
+    "F.F. Cor",
+    "F.F. pH",
+    "F.F. Muco",
+    "F.F. Fibras mal dig.",
+    "F.F. Fibras pouco dig.",
+    "F.F. Fibras bem dig.",
+    "F.F. Gordura",
+    "F.F. Amido",
+    "F.F. Flora Iodófila",
+    "F.F. Leveduras",
+    "F.F. Hemácias",
+    "F.F. Leucócitos",
+  ];
+
+  const spermExams = ["Vol. Sêmen", "pH Sêmen", "Conc. Esperm.", "Motilidade Total", "Motilidade Prog.", "Morfologia Típica"];
 
   // Provas reumatológicas (autoimunidade / inflamação / reumatologia)
   const rheumExams = [
@@ -171,6 +197,7 @@
     if (/^ELEP\s*24h\b/i.test(examName)) return "urine";
     if (urineExams.includes(examName)) return "urine";
     if (stoolExams.includes(examName)) return "stool";
+    if (spermExams.includes(examName)) return "sperm";
 
     // Provas alérgicas (IgE total e IgE específicas/múltiplas)
     if (examName === "IgE total" || /^IgE\s/i.test(examName)) return "allergy";
@@ -185,6 +212,7 @@
     ABO: /ordem de serviço[\s\S]*?GRUPO SANG[UÜ]ÍNEO[\s\S]*?RESULTADO:?\s*(AB|A|B|O)\b/i,
     RH: /ordem de serviço[\s\S]*?FATOR RH[\s\S]*?FATOR RH:?\s*(Positivo|Negativo)/i,
     Du: /ordem de serviço[\s\S]*?Fator DU\:?\s*(\S+)/i,
+    RBC: /ordem de serviço[\s\S]*?Hem[aá]cias\.{2,}:\s+(\d+(?:,\d*)?)\s+milh[õo]es/i,
     "Eletroforese de Hb - HbA1": /ordem de serviço[\s\S]*?ELETROFORESE DE HEMOGLOBINA[\s\S]*?(?:\n|^)\s*A1:\s*([\d]+(?:[.,]\d+)?)\s*%/i,
     HbA2: /ordem de serviço[\s\S]*?ELETROFORESE DE HEMOGLOBINA[\s\S]*?(?:\n|^)\s*A2:\s*([\d]+(?:[.,]\d+)?)\s*%/i,
     HbF: /ordem de serviço[\s\S]*?ELETROFORESE DE HEMOGLOBINA[\s\S]*?(?:\n|^)\s*F:\s*([\d]+(?:[.,]\d+)?)\s*%/i,
@@ -212,8 +240,8 @@
     "HAPTOGLOBINA (mg/dL)": /ordem de serviço[\s\S]*?HAPTOGLOBINA[\s\S]*?Resultado:?\s*(\d+(?:[.,]\d+)?)\s*mg\/dL/i,
     Ferritina: /ordem de serviço[\s\S]*?FERRITINA[\s\S]+?Resultado:?\s+(.*?)\s+ng\/mL/i,
     Transferrina: /ordem de serviço[\s\S]*?(?<!da )TRANSFERRINA[\s\S]+?Resultado:?\s+(.*?)\s+mg\/dL/i,
-    TSAT: /ordem de serviço[\s\S]*?DA TRANSFERRINA[\s\S]*?Resultado:\s*(\d+(:?,\d*)?)/i,
-    TIBC: /ordem de serviço[\s\S]*?CAPACIDADE TOTAL COMBINAÇÃO DO FERRO[\s\S]*?RESULTADO:\s*(\d+)\s*µg\/dL/i,
+    TSAT: /ordem de serviço[\s\S]*?(?:SATURAÇÃO\s+)?DA TRANSFERRINA[\s\S]*?(?:Resultado|RESULTADO):?\s*(\d+(?:,\d*)?)/i,
+    TIBC: /ordem de serviço[\s\S]*?CAPACIDADE TOTAL (?:DE )?(?:COMBINAÇÃO|LIGAÇÃO|FIXAÇÃO)(?: DO)? FERRO[\s\S]*?RESULTADO:\s*(\d+(?:,\d*)?)/i,
     CR: /ordem de serviço[\s\S]*?^\s*CREATININA\s*$[\s\S]{0,400}?\bRESULTADO:?\s*([\d,]+)\s*mg\/dL/im,
     UR: /ordem de serviço[\s\S]*?UR[EÉ]IA[\s\S]*?Resultado:\s*(\d+(?:,\d*)?)/i,
     CaT: /ordem de serviço[\s\S]*?C[AÁ]LCIO(?![ \t]*I[OÔ]NICO)[\s\S]*?RESULTADO:\s*(\d+(?:,\d+)?)/i,
@@ -272,7 +300,7 @@
     "Endomísio IgA": /ordem de serviço[\s\S]*?ENDOMISIO IgA[\s\S]*?Resultado:?\s+(\S+)/i,
     "Endomísio IgG": /ordem de serviço[\s\S]*?ENDOMISIO IgG[\s\S]*?Resultado:?\s+(\S+)/i,
     "Endomísio IgM": /ordem de serviço[\s\S]*?ENDOMISIO IgM[\s\S]*?Resultado:?\s+(\S+)/i,
-    "tTG-IgA": /ordem de serviço[\s\S]*?ANTI-TRANSGLUTAMINASE[\s\S]*?Resultado:?\s+(\d+,?\d*)/i,
+    "tTG-IgA": /ordem de serviço[\s\S]*?ANTI-TRANSGLUTAMINASE[\s\S]*?Resultado:?\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
     "PCR (mg/L)": /ordem de serviço[\s\S]*?PROTEÍNA C REATIVA[\s\S]*?Resultado:?\s+(\d+,?\d*)\s+mg\/L/i,
     VHS: /ordem de serviço[\s\S]*?HEMOSSEDIMENTAÇÃO[\s\S]*?Resultado.:?\s+(\d+)\s+mm\/1/i,
     "ANTI-CENTRÔMERO": /ordem de serviço[\s\S]*?CENTR(?:Ô|O)MERO[\s\S]*?RESULTADO:\s*(N(?:ÃO|AO)\s+reagente|Reagente)/i,
@@ -317,7 +345,7 @@
     "IgE D1 (ácaro)": /IGE\s+ESPEC[ÍI]FICA[\s\S]*?\(D1\)[\s\S]*?RESULTADO:\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
     "IgE D2 (ácaro)": /IGE\s+ESPEC[ÍI]FICA[\s\S]*?\(D2\)[\s\S]*?RESULTADO:\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
     "IgE F245 (ovo)": /IGE\s+ESPEC[ÍI]FICA[\s\S]*?____\([^)]+\)1__1__[\s\S]*?RESULTADO:\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
-    "IgE F2 (leite)": /IGE\s+ESPEC[ÍI]FICA[\s\S]*?____\([^)]+\)2__2__[\s\S]*?RESULTADO:\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
+    "IgE F2 (leite)": /ordem de serviço[\s\S]*?IGE\s*ESPECIFICA[:\s]*LEITE\s*\(F2\)[\s\S]*?RESULTADO:?\s*(?:<\s*)?(\d+(?:,\d+)?)\s*kU\/L/i,
     "IgE F14 (soja)": /IGE\s+ESPEC[ÍI]FICA[\s\S]*?____\([^)]+\)3__3__[\s\S]*?RESULTADO:\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
     "IgE F4 (trigo)": /IGE\s+ESPEC[ÍI]FICA[\s\S]*?____\([^)]+\)4__4__[\s\S]*?RESULTADO:\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
     "IgE F3 (bacalhau)": /IGE\s+ESPEC[ÍI]FICA[\s\S]*?____\([^)]+\)5__5__[\s\S]*?RESULTADO:\s*((?:Inferior|Superior)\s+a\s+[\d.,]+|[\d.,]+)/i,
@@ -416,7 +444,7 @@
     PTH: /ordem de serviço[\s\S]*?PARATIROIDEANO[\s\S]*?Resultado:?\s+(.*?)\s+pg\/mL/i,
     PTHi: /ordem de serviço[\s\S]*?PARATORMÔNIO[\s\S]*?Resultado:\s*(\d+(?:,\d*)?)\s*pg\/mL/i,
 
-    PepC: /ordem de serviço[\s\S]*?PEPTÍDEO C[\s\S]*?PEPTÍDEO C:?\s+(.*?)\s+ng\/mL/i,
+    "Peptídeo C": /ordem de serviço[\s\S]*?PEPTÍDEO C[\s\S]*?RESULTADO:?\s+(\d+,?\d*)\s+ng\/mL/i,
     Insulina: /ordem de serviço[\s\S]*?Insulina[\s\S]*?Resultado:?\s+(.*?)\s+micro UI\/mL/i,
     "IGFBP-3": /ordem de serviço[\s\S]*?IGFBP\s*-\s*3[\s\S]*?RESULTADO:?\s*([\d]+(?:[.,]\d+)?)\s*mcg\/mL/i,
     "IGF-1": /ordem de serviço[\s\S]*?(?:SOMATOMEDINA\s*C|IGF-?\s*1)[\s\S]*?RESULTADO:?\s*([\d]+(?:[.,]\d+)?)\s*ng\/mL/i,
@@ -455,6 +483,20 @@
     PPF2: /ordem de serviço[\s\S]*?DE FEZES - 2[\s\S]+?Resultado:?\s*(\S+)/i,
     PPF3: /ordem de serviço[\s\S]*?DE FEZES - 3[\s\S]+?Resultado:?\s*(\S+)/i,
     "Calprotectina fecal": /ordem de serviço[\s\S]*?Calprotectina[\s\S]*?Resultado:?\s*(\S+)/i,
+    "F.F. Consistência": /FUNCIONAL DE FEZES[\s\S]*?CONSISTENCIA:\s*([^\r\n]+)/i,
+    "F.F. Forma": /FUNCIONAL DE FEZES[\s\S]*?FORMA:\s*([^\r\n]+)/i,
+    "F.F. Cor": /FUNCIONAL DE FEZES[\s\S]*?COR:\s*([^\r\n]+)/i,
+    "F.F. pH": /FUNCIONAL DE FEZES[\s\S]*?PH\s*\(REAÇÃO\):\s*([\d,]+)/i,
+    "F.F. Muco": /FUNCIONAL DE FEZES[\s\S]*?MUCO:\s*([^\r\n]+)/i,
+    "F.F. Fibras mal dig.": /FUNCIONAL DE FEZES[\s\S]*?FIBRAS MUSCULARES MAL DIGERIDAS:\s*([^\r\n]+)/i,
+    "F.F. Fibras pouco dig.": /FUNCIONAL DE FEZES[\s\S]*?FIBRAS MUSCULARES POUCO DIGERIDAS:\s*([^\r\n]+)/i,
+    "F.F. Fibras bem dig.": /FUNCIONAL DE FEZES[\s\S]*?FIBRAS MUSCULARES BEM DIGERIDAS:\s*([^\r\n]+)/i,
+    "F.F. Gordura": /FUNCIONAL DE FEZES[\s\S]*?GORDURA:\s*([^\r\n]+)/i,
+    "F.F. Amido": /FUNCIONAL DE FEZES[\s\S]*?AMIDO:\s*([^\r\n]+)/i,
+    "F.F. Flora Iodófila": /FUNCIONAL DE FEZES[\s\S]*?FLORA IODOFILA:\s*([^\r\n]+)/i,
+    "F.F. Leveduras": /FUNCIONAL DE FEZES[\s\S]*?LEVEDURAS:\s*([^\r\n]+)/i,
+    "F.F. Hemácias": /FUNCIONAL DE FEZES[\s\S]*?HEMACIAS:\s*([^\r\n]+)/i,
+    "F.F. Leucócitos": /FUNCIONAL DE FEZES[\s\S]*?LEUCOCITOS:\s*([^\r\n]+)/i,
     "EAS-pH": /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?pH:\s*([\d]+(?:[.,]\d+)?)/i,
     Urobilinogênio: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Urobilinog[eê]nio:\s*([^\r\n]+)/i,
     Glicose: /ordem de serviço[\s\S]*?URINA TIPO I[\s\S]*?Glicose:\s*(Negativo|\+{1,4})/i,
@@ -474,10 +516,18 @@
     "Albuminúria isolada": /ordem de serviço[\s\S]*?RELAÇÃO\s+ALBUMINA\/CREATININA[\s\S]*?(\d+(?:,\d+)?)\s+mg\/g/i,
     "Proteinúria 24h": /ordem de serviço[\s\S]*?PROTEINÚRIA URINA DE 24[\s\S]*?Resultado:\s*(\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?)/i,
     UROC: /ordem de serviço[\s\S]*?UROCULTURA[\s\S]*?Resultado:\s*(\S+)/i, // May need refinement based on result format
+    "Vol. Sêmen": /VOLUME\s*:\s*([\d,]+)\s*mL/i,
+    "pH Sêmen": /ESPERMA[\s\S]*?pH\s*:\s*([\d,]+)/i,
+    "Conc. Esperm.": /CONCENTRAÇÃO ESPERMÁTICA\s*:\s*([\d.]+)/i,
+    "Motilidade Total": /ESPERMATOZOIDES MÓVEIS\s*:\s*(\d+)\s*%/i,
+    "Motilidade Prog.": /ESPERMATOZOIDES PROGRESSIVOS\s*:\s*(\d+)\s*%/i,
+    "Morfologia Típica": /FORMAS TÍPICAS\s*:\s*(\d+)/i,
   };
 
   // Faixas de referência para os exames.
   const reference_values = {
+    RBC: [4.0, 5.2],
+    "Índice de Mentzer": [13.0, 999.0],
     HB: [12.0, 16.0],
     HT: [35.0, 50.0],
     VCM: [80.0, 100.0],
@@ -527,6 +577,7 @@
     TRAB: [0, 1.5],
     PTH: [18.5, 88],
     PTHi: [18.5, 88],
+    "Peptídeo C": [1.03, 4.79],
     CT: [0, 200],
     HDL: [0, 120], // Note: Often minimum is > 40 or 60
     LDL: [0, 130],
@@ -605,6 +656,12 @@
     "Creatinina urina 24h": [600, 2000],
     "Sódio urina 24h": [40, 220],
     "Proteinúria 24h": [0, 80],
+    "Vol. Sêmen": [1.5, 5.0],
+    "pH Sêmen": [7.2, 8.0],
+    "Conc. Esperm.": [15000000, 1000000000],
+    "Motilidade Total": [40, 100],
+    "Motilidade Prog.": [32, 100],
+    "Morfologia Típica": [30, 100],
   };
 
   // Função para converter string numérica (com vírgula) em float.
@@ -758,9 +815,7 @@
       // 3) Fallback: tenta o padrão antigo, se houver
       const fallback = text.match(pattern);
       if (fallback) {
-        const val = fallback
-          .slice(1)
-          .find((group) => typeof group === "string" && group.trim() !== "");
+        const val = fallback.slice(1).find((group) => typeof group === "string" && group.trim() !== "");
         if (!val) return "Não encontrado";
         const normalizedVal = val.trim();
         // Se capturou um título direto (ex.: "1:8"), retorna-o
@@ -783,9 +838,7 @@
     // Converte "Inferior a 0,10" -> "< 0,10"
     //         "Superior a 5,00"  -> "> 5,00"
     if (match) {
-      const captured = match
-        .slice(1)
-        .find((group) => typeof group === "string" && group.trim() !== "");
+      const captured = match.slice(1).find((group) => typeof group === "string" && group.trim() !== "");
       if (!captured) return "Não encontrado";
       let tmp = captured.trim();
       tmp = tmp.replace(/^(Inferior|Superior)\s+a\s+([\d.,]+)/i, (_, dir, num) => (dir.toLowerCase().startsWith("inferior") ? "< " : "> ") + num);
@@ -809,6 +862,45 @@
       results[exam] = extractValue(pageText, exam, examPatterns[exam]);
     }
 
+    // --- Derivação do Índice de Mentzer ---
+    if (results["RBC"] && results["RBC"] !== "Não encontrado" && results["VCM"] && results["VCM"] !== "Não encontrado") {
+      const rbcVal = convertToFloat(results["RBC"]);
+      const vcmVal = convertToFloat(results["VCM"]);
+      if (!isNaN(rbcVal) && !isNaN(vcmVal) && rbcVal > 0) {
+        const mentzer = vcmVal / rbcVal;
+        results["Índice de Mentzer"] = mentzer.toFixed(2).replace(".", ",");
+      }
+    }
+
+    // --- Derivação do TSAT (Saturação da Transferrina) ---
+    if (results["FE"] && results["FE"] !== "Não encontrado") {
+      const feVal = convertToFloat(results["FE"]);
+      const hasTsat = results["TSAT"] && results["TSAT"] !== "Não encontrado";
+
+      // Só processa se não estiver explícito no exame (e o ferro for numérico válido)
+      if (!hasTsat && !isNaN(feVal) && feVal > 0) {
+        let computedTsat = null;
+
+        if (results["TIBC"] && results["TIBC"] !== "Não encontrado") {
+          const tibcVal = convertToFloat(results["TIBC"]);
+          if (!isNaN(tibcVal) && tibcVal > 0) {
+            // A saturação é simplesmente Ferro / TIBC * 100
+            computedTsat = (feVal / tibcVal) * 100;
+          }
+        } else if (results["Transferrina"] && results["Transferrina"] !== "Não encontrado") {
+          const transfVal = convertToFloat(results["Transferrina"]);
+          if (!isNaN(transfVal) && transfVal > 0) {
+            // TIBC = Transferrina * 1.4 (Padrão estimado aceito para cálculo)
+            computedTsat = (feVal / (transfVal * 1.4)) * 100;
+          }
+        }
+
+        if (computedTsat !== null) {
+          results["TSAT"] = computedTsat.toFixed(1).replace(".", ",");
+        }
+      }
+    }
+
     // --- FAN negative logic (revisado) ----------------------------------
     // Considera que existe resultado de FAN se capturamos
     //   a) o título (ex.: 1/320) ou
@@ -828,15 +920,14 @@
     const renameToNRWords = ["Não", "Inferior"];
     // Define exams to omit if result is "Ausente", "Negativo", or "Normal"
     // OBS: Nitrito é um marcador importante no EAS; não omitir quando vier "Negativo".
-    const omitExamsIfNeutral = ["Cetonas", "Bilirru", "Urobili", "Protein", "Glicose", "Hemoglo", "Cilindr", "Escamos", "Não esc", "Levedur", "Fil muc", "Muco", "Cristal", "Células Epiteliais"];
+    const omitExamsIfNeutral = ["Cetonas", "Bilirru", "Urobili", "Protein", "Glicose", "Hemoglo", "Cilindr", "Escamos", "Não esc", "Levedur", "Fil muc", "Muco", "Cristal", "Células Epiteliais", "F.F."];
     // Define neutral results that trigger omission for specific exams
     const neutralResults = ["Ausente", "Ausentes", "Negativo", "Normal"];
     const renameToNRWordsNormalized = renameToNRWords.map(normalizeForComparison);
     const omitExamsIfNeutralNormalized = omitExamsIfNeutral.map(normalizeForComparison);
     const neutralResultsNormalized = neutralResults.map(normalizeForComparison);
     const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const isNeutralValue = (normalizedValue) =>
-      neutralResultsNormalized.some((neutral) => new RegExp(`^${escapeRegex(neutral)}(?:\\s+${escapeRegex(neutral)})*$`).test(normalizedValue));
+    const isNeutralValue = (normalizedValue) => neutralResultsNormalized.some((neutral) => new RegExp(`^${escapeRegex(neutral)}(?:\\s+${escapeRegex(neutral)})*$`).test(normalizedValue));
 
     // Separar resultados por categoria
     let bloodPartsHTML = [];
@@ -854,6 +945,9 @@
     let rheumPartsMarkdown = [];
     let urinePartsMarkdown = [];
     let stoolPartsMarkdown = [];
+    let spermPartsHTML = [];
+    let spermPartsPlain = [];
+    let spermPartsMarkdown = [];
 
     for (let exam in results) {
       let rawResult = results[exam];
@@ -932,6 +1026,10 @@
         allergyPartsHTML.push(examEntry);
         allergyPartsPlain.push(examEntryPlain);
         allergyPartsMarkdown.push(examEntryMarkdown);
+      } else if (category === "sperm") {
+        spermPartsHTML.push(examEntry);
+        spermPartsPlain.push(examEntryPlain);
+        spermPartsMarkdown.push(examEntryMarkdown);
       } else {
         bloodPartsHTML.push(examEntry);
         bloodPartsPlain.push(examEntryPlain);
@@ -972,6 +1070,12 @@
       listItems.push(`<li><strong>Exames de fezes ${cadastroDate}:</strong> ${stoolPartsHTML.join(" / ")}</li>`);
       listItemsPlain.push(`Exames de fezes ${cadastroDate}: ${stoolPartsPlain.join(" / ")}`);
       listItemsMarkdown.push(`- **Exames de fezes ${cadastroDate}:** ${stoolPartsMarkdown.join(" / ")}`);
+    }
+
+    if (spermPartsHTML.length > 0) {
+      listItems.push(`<li><strong>Espermograma ${cadastroDate}:</strong> ${spermPartsHTML.join(" / ")}</li>`);
+      listItemsPlain.push(`Espermograma ${cadastroDate}: ${spermPartsPlain.join(" / ")}`);
+      listItemsMarkdown.push(`- **Espermograma ${cadastroDate}:** ${spermPartsMarkdown.join(" / ")}`);
     }
 
     const finalHTML = listItems.length > 0 ? `<ul>${listItems.join("")}</ul>` : "<p>Nenhum exame encontrado.</p>";
