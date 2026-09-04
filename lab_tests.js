@@ -141,6 +141,8 @@
 
   const spermExams = ["Vol. Sêmen", "pH Sêmen", "Conc. Esperm.", "Motilidade Total", "Motilidade Prog.", "Morfologia Típica"];
 
+  const venousGasometryExams = ["pH", "pCO2", "pO2", "HCO3", "B.E", "ctCO2", "Saturação O2"];
+
   // Provas reumatológicas (autoimunidade / inflamação / reumatologia)
   const rheumExams = [
     // Inflamação
@@ -198,6 +200,7 @@
     if (urineExams.includes(examName)) return "urine";
     if (stoolExams.includes(examName)) return "stool";
     if (spermExams.includes(examName)) return "sperm";
+    if (venousGasometryExams.includes(examName)) return "venousGasometry";
 
     // Provas alérgicas (IgE total e IgE específicas/múltiplas)
     if (examName === "IgE total" || /^IgE\s/i.test(examName)) return "allergy";
@@ -209,6 +212,8 @@
   // Padrões regex para os exames.
   const examPatterns = {
     "b-hCG": /ordem de serviço[\s\S]*?HCG[\s\S]+?Resultado\s*:?\s*(\S+)/i,
+    "Grupo Sanguíneo": /ordem de serviço[\s\S]*?GRUPO SANGUINEO:\s*([ABO]{1,2})/i,
+    "Fator Rh": /ordem de serviço[\s\S]*?FATOR RH \(D\):\s*(POSITIVO|NEGATIVO)/i,
     ABO: /ordem de serviço[\s\S]*?GRUPO SANG[UÜ]ÍNEO[\s\S]*?RESULTADO:?\s*(AB|A|B|O)\b/i,
     RH: /ordem de serviço[\s\S]*?FATOR RH[\s\S]*?FATOR RH:?\s*(Positivo|Negativo)/i,
     Du: /ordem de serviço[\s\S]*?Fator DU\:?\s*(\S+)/i,
@@ -291,9 +296,9 @@
     Globulina: /ordem de serviço[\s\S]*?PROTE[IÍ]NAS TOTAIS E[\s\S]*?Globulina[\s\S]*?(\d+(?:,\d*)?)/i,
     "Relacao A/G": /ordem de serviço[\s\S]*?PROTE[IÍ]NAS TOTAIS E[\s\S]*?Relação A[\s\S]*?(\d+(?:,\d*)?)/i,
     "Alfa-fetoproteína": /ordem de serviço[\s\S]*?FETOPROTE[\s\S]*?Resultado[\s\S]*?(\d+(?:,\d*)?)/i,
-    "TTL (Lactose) - Jejum": /ordem de serviço[\s\S]*?LACTOSE[\s\S]*?Glicose em Jejum:?\s+(\d+,?\d*)/i,
-    "TTL (Lactose) - 30 min": /ordem de serviço[\s\S]*?LACTOSE[\s\S]*?Glicose após 30 minutos:?\s+(\d+,?\d*)/i,
-    "TTL (Lactose) - 60 min": /ordem de serviço[\s\S]*?LACTOSE[\s\S]*?Glicose após 60 minutos:?\s+(\d+,?\d*)/i,
+    "Lactose - Jejum": /ordem de serviço[\s\S]*?TESTE DE TOLERANCIA ORAL A LACTOSE[\s\S]*?Jejum:\s+(\d+(?:,\d*)?)\s+mg\/dL/i,
+    "Lactose - 30 min": /ordem de serviço[\s\S]*?TESTE DE TOLERANCIA ORAL A LACTOSE[\s\S]*?30 MINUTOS:\s+(\d+(?:,\d*)?)\s+mg\/dL/i,
+    "Lactose - 60 min": /ordem de serviço[\s\S]*?TESTE DE TOLERANCIA ORAL A LACTOSE[\s\S]*?60 minutos:\s+(\d+(?:,\d*)?)\s+mg\/dL/i,
     // ----------------------------------------------
     // Anticorpos, provas inflamatórias e auto-imunes
     "Gliadina IgA": /ordem de serviço[\s\S]*?GLIADINA IgA[\s\S]*?Resultado:?\s+(\d+,?\d*)/i,
@@ -415,12 +420,12 @@
     "Anti-TPO": /ordem de serviço[\s\S]*?TIREOPEROXIDASE[\s\S]*?RESULTADO:?\s+(\d+(?:[.,]\d+)?)\s+UI\/mL/i,
     TRAB: /ordem de serviço[\s\S]*?TRAB[\s\S]*?Resultado:?\s*(\d+(?:,\d*)?)/i,
     "Anti-Tg": /ordem de serviço[\s\S]*?TIREOGLOBULINA[\s\S]*?Resultado:?\s*(\d+(?:,\d*)?)\s+UI\/mL/i,
-    VDRL: /ordem de serviço[\s\S]*?VDRL[\s\S]{0,300}?RESULTADO:\s*(?:Amostra\s+)?(N[ÃA]O|NAO|Reagente|REAGENTE|\d+\s*:\s*\d+)/i,
+    VDRL: /ordem de serviço[\s\S]*?VDRL[\s\S]{0,300}?RESULTADO:\s*(?:Amostra\s+)?((?:N[ÃA]O|NAO)\s*REAGENTE|REAGENTE|NEGATIVO|POSITIVO|FRACAMENTE\s+POSITIVO|\d+\s*:\s*\d+)/i,
     "FTA-ABS IgG": /ordem de serviço[\s\S]*?FTA\s*ABS[\s\S]*?IgG[\s\S]*?Resultado:?[\s\S]*?(REAGENTE|N[ÃA]O\s+REAGENTE)/i,
     "FTA-ABS IgM": /ordem de serviço[\s\S]*?FTA\s*ABS[\s\S]*?IgM[\s\S]*?Resultado:?[\s\S]*?(N[ÃA]O\s+REAGENTE|INDETERMINADO|REAGENTE)/i,
-    HBsAg: /ordem de serviço[\s\S]*?HBsAg[\s\S]*?Resultado:?\s*(\S+)/i,
+    HBsAg: /ordem de serviço[\s\S]*?HEPATITE\s*B[\s\S]*?HBsAg[\s\S]*?RESULTADO:\s*AMOSTRA\s+(?:(N[ÃA]O)\s+REAGENTE|(REAGENTE))\s+PARA\s+HbsAg/i,
     "Anti-HBs": /ordem de serviço[\s\S]*?ANTI-?HBs[\s\S]*?Resultado:?\s*(?:([\d,.]+)\s*UI\/L|(N[ÃA]O\s*REAGENTE|REAGENTE))/i,
-    "Anti-HCV": /ordem de serviço[\s\S]*?HCV[\s\S]*?Resultado:?\s*(\S+)/i,
+    "Anti-HCV": /ordem de serviço[\s\S]*?HEPATITE\s*C[\s\S]*?ANTI-?HCV[\s\S]*?RESULTADO:\s*AMOSTRA\s+(?:(N[ÃA]O)\s+REAGENTE|(REAGENTE))\s+PARA\s+ANTI-?HCV/i,
     "Anti-HBe": /ordem de serviço[\s\S]*?\(ANTI-HBE\)[\s\S]*?RESULTADO:\s*((?:N(?:Ã|A)O\s+)?Reagente)/i,
     HBeAg: /ordem de serviço[\s\S]*?\(HBEAG\)[\s\S]*?RESULTADO:\s*((?:N(?:Ã|A)O\s+)?Reagente)/i,
     "Anti-HBc": /ordem de serviço[\s\S]*?\(ANTI-HBC\)[\s\S]*?RESULTADO:\s*((?:N(?:Ã|A)O\s+)?Reagente)/i,
@@ -712,6 +717,31 @@
       .trim();
   }
 
+  function normalizeVdrlResult(value) {
+    const trimmedValue = String(value || "").trim();
+    const normalizedValue = normalizeForComparison(trimmedValue);
+
+    if (!trimmedValue) return "";
+
+    if (/^\d+\s*[:/]\s*\d+$/.test(trimmedValue)) {
+      return trimmedValue.replace(/\s*/g, "").replace("/", ":");
+    }
+
+    if (normalizedValue === "nao" || normalizedValue === "nao reagente" || normalizedValue === "negativo") {
+      return "NR";
+    }
+
+    if (normalizedValue === "fracamente positivo") {
+      return "FRACAMENTE POSITIVO";
+    }
+
+    if (normalizedValue === "positivo" || normalizedValue === "reagente") {
+      return "REAGENTE";
+    }
+
+    return trimmedValue;
+  }
+
   async function copyToClipboard(text) {
     if (typeof GM_setClipboard === "function") {
       GM_setClipboard(text, "text");
@@ -804,11 +834,10 @@
         }
 
         // 2) Se não houver TÍTULO, tenta ler o RESULTADO
-        const resultMatch = block.match(/RESULTADO:\s*(?:Amostra\s+)?(N[ÃA]O\s*REAGENTE|REAGENTE)/i);
+        const resultMatch = block.match(/RESULTADO:\s*(?:Amostra\s+)?(N[ÃA]O\s*REAGENTE|REAGENTE|NEGATIVO|POSITIVO|FRACAMENTE\s+POSITIVO)/i);
         if (resultMatch) {
-          const v = resultMatch[1].toUpperCase();
-          if (/N[ÃA]O\s*REAGENTE/.test(v)) return "NR";
-          return "REAGENTE"; // caso positivo sem título informado
+          const normalizedResult = normalizeVdrlResult(resultMatch[1]);
+          if (normalizedResult) return normalizedResult;
         }
       }
 
@@ -817,14 +846,8 @@
       if (fallback) {
         const val = fallback.slice(1).find((group) => typeof group === "string" && group.trim() !== "");
         if (!val) return "Não encontrado";
-        const normalizedVal = val.trim();
-        // Se capturou um título direto (ex.: "1:8"), retorna-o
-        if (/^\d+\s*[:\/]\s*\d+$/.test(normalizedVal)) {
-          return normalizedVal.replace(/\s*/g, "").replace("/", ":");
-        }
-        // Se capturou "NÃO" ou "NAO", normaliza para NR
-        if (/^N[ÃA]O$/i.test(normalizedVal)) return "NR";
-        return normalizedVal;
+        const normalizedVal = normalizeVdrlResult(val);
+        return normalizedVal || "Não encontrado";
       }
 
       return "Não encontrado";
@@ -935,16 +958,20 @@
     let rheumPartsHTML = [];
     let urinePartsHTML = [];
     let stoolPartsHTML = [];
+    let venousGasometryPartsHTML = [];
+
     let bloodPartsPlain = [];
     let allergyPartsPlain = [];
     let rheumPartsPlain = [];
     let urinePartsPlain = [];
     let stoolPartsPlain = [];
+    let venousGasometryPartsPlain = [];
     let bloodPartsMarkdown = [];
     let allergyPartsMarkdown = [];
     let rheumPartsMarkdown = [];
     let urinePartsMarkdown = [];
     let stoolPartsMarkdown = [];
+    let venousGasometryPartsMarkdown = [];
     let spermPartsHTML = [];
     let spermPartsPlain = [];
     let spermPartsMarkdown = [];
@@ -999,7 +1026,7 @@
       // Special formatting for VDRL
       if (exam === "VDRL") {
         const normalized = normalizeForComparison(rawResult);
-        if (rawResult !== "NR" && !/^amostra nao/.test(normalized)) {
+        if (rawResult !== "NR" && normalized !== "negativo" && normalized !== "nao reagente" && !/^amostra nao/.test(normalized)) {
           formattedHTML = `<strong>${rawResult}</strong>`;
           formattedMarkdown = `**${rawResult}**`;
         }
@@ -1018,6 +1045,10 @@
         stoolPartsHTML.push(examEntry);
         stoolPartsPlain.push(examEntryPlain);
         stoolPartsMarkdown.push(examEntryMarkdown);
+      } else if (category === "venousGasometry") {
+        venousGasometryPartsHTML.push(examEntry);
+        venousGasometryPartsPlain.push(examEntryPlain);
+        venousGasometryPartsMarkdown.push(examEntryMarkdown);
       } else if (category === "rheum") {
         rheumPartsHTML.push(examEntry);
         rheumPartsPlain.push(examEntryPlain);
@@ -1058,6 +1089,12 @@
       listItems.push(`<li><strong>Provas reumatológicas ${cadastroDate}:</strong> ${rheumPartsHTML.join(" / ")}</li>`);
       listItemsPlain.push(`Provas reumatológicas ${cadastroDate}: ${rheumPartsPlain.join(" / ")}`);
       listItemsMarkdown.push(`- **Provas reumatológicas ${cadastroDate}:** ${rheumPartsMarkdown.join(" / ")}`);
+    }
+
+    if (venousGasometryPartsHTML.length > 0) {
+      listItems.push(`<li><strong>Gasometria venosa ${cadastroDate}:</strong> ${venousGasometryPartsHTML.join(" / ")}</li>`);
+      listItemsPlain.push(`Gasometria venosa ${cadastroDate}: ${venousGasometryPartsPlain.join(" / ")}`);
+      listItemsMarkdown.push(`- **Gasometria venosa ${cadastroDate}:** ${venousGasometryPartsMarkdown.join(" / ")}`);
     }
 
     if (urinePartsHTML.length > 0) {
